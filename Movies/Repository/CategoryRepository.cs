@@ -1,4 +1,5 @@
 ﻿using Movies.Data;
+using Movies.Dto;
 using Movies.Interfaces;
 using Movies.Models;
 
@@ -17,6 +18,7 @@ namespace Movies.Repository
             return _context.Categories.Any(c => c.Id == categoryId);
         }
 
+
         public ICollection<Category> GetCategories()
         {
             return _context.Categories.ToList();
@@ -30,6 +32,18 @@ namespace Movies.Repository
         public ICollection<Movie> GetMovieByCategoryId(int categoryId)
         {
             return _context.MovieCategories.Where(c => c.CategoryId == categoryId).Select(c => c.Movie).ToList();
+        }
+
+        public bool CreateCategory(Category category)
+        {
+            _context.Add(category);
+            return Save();
+        }
+
+        public bool Save()
+        {
+            var saved = _context.SaveChanges();
+            return saved > 0 ? true : false;
         }
     }
 }

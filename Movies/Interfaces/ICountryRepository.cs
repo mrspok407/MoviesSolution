@@ -9,5 +9,7 @@ namespace Movies.Interfaces
         Country GetCountryByGenre(int genreId);
         ICollection<Genre> GetGenresFromACountry(int countryId);
         bool CountryExists(int id);
+        bool CreateCountry(Country country);
+        bool Save();
     }
 }

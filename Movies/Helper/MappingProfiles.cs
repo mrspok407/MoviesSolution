@@ -10,9 +10,12 @@ namespace Movies.Helper
         {
             CreateMap<Movie, MovieDto>();
             CreateMap<Category, CategoryDto>();
+            CreateMap<CategoryDto, Category>();
             CreateMap<Genre, GenreDto>();
+            CreateMap<GenreDto, Genre>();
             CreateMap<Reviewer, ReviewerDto>();
             CreateMap<Country, CountryDto>();
+            CreateMap<CountryDto, Country>();
             CreateMap<Review, ReviewDto>();
         }
     }

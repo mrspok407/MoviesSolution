@@ -45,11 +45,26 @@ namespace Movies.Controllers
             if (!_countryRepository.CountryExists(countryId))
                 return NotFound();
 
-            var movie = _mapper.Map<CountryDto>(_countryRepository.GetCountry(countryId));
+            var country = _mapper.Map<CountryDto>(_countryRepository.GetCountry(countryId));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            return Ok(movie);
+            return Ok(country);
+        }
+
+        [HttpGet("{countryId}/genres")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Genre>))]
+        [ProducesResponseType(400)]
+        public IActionResult GetGenresByCountryId(int countryId)
+        {
+            if (!_countryRepository.CountryExists(countryId))
+                return NotFound();
+
+            var genres = _mapper.Map<List<GenreDto>>(_countryRepository.GetGenresFromACountry(countryId));
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            return Ok(genres);
         }
 
         [HttpGet("/genres/{genreId}")]
@@ -66,6 +81,36 @@ namespace Movies.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             return Ok(country);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateCountry([FromBody] CountryDto countryInput)
+        {
+            if (countryInput == null)
+                return BadRequest(ModelState);
+
+            var countryExists = _countryRepository.GetCountries()
+                .FirstOrDefault(c => c.Name.Trim().ToUpper() == countryInput.Name.Trim().ToUpper());
+
+            if (countryExists != null)
+            {
+                ModelState.AddModelError("", "Country with this name already exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var countryMap = _mapper.Map<Country>(countryInput);
+
+            if (!_countryRepository.CreateCountry(countryMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Successfully created");
         }
     }
 }

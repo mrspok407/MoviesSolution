@@ -10,7 +10,12 @@ namespace Movies.Interfaces
         ICollection<Genre> GetGenresOfAMovie(int movieId);
 
         ICollection<Movie> GetMoviesByGenreId(int genreId);
-        
+
+        Country GetCountryByGenreId(int genreId);
+
+
         bool GenreExists(int id);
+        bool CreateGenre(Genre genre);
+        bool Save();
     }
 }

@@ -61,5 +61,35 @@ namespace Movies.Controllers
 
             return Ok(movies);
         }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateCategory([FromBody] CategoryDto categoryInput)
+        {
+            if (categoryInput == null)
+                return BadRequest(ModelState);
+
+            var categoryExists = _categoryRepository.GetCategories()
+                .FirstOrDefault(c => c.Name.Trim().ToUpper() == categoryInput.Name.Trim().ToUpper());
+
+            if (categoryExists != null)
+            {
+                ModelState.AddModelError("", "Category with this name already exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var categoryMap = _mapper.Map<Category>(categoryInput);
+
+            if (!_categoryRepository.CreateCategory(categoryMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Successfully created");
+        }
     }
 }
