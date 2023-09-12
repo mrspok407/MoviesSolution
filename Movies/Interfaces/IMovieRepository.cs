@@ -13,5 +13,10 @@ namespace Movies.Interfaces
 
         ICollection<Reviewer> GetReviewers(int movieId);
         bool MovieExists(int movieId);
+
+        bool CreateMovie(int genreId, int categoryId, Movie movie);
+        bool UpdateMovie(Movie movie);
+
+        bool Save();
     }
 }

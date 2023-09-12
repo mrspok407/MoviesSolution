@@ -8,15 +8,12 @@ namespace Movies.Helper
     {
         public MappingProfiles()
         {
-            CreateMap<Movie, MovieDto>();
-            CreateMap<Category, CategoryDto>();
-            CreateMap<CategoryDto, Category>();
-            CreateMap<Genre, GenreDto>();
-            CreateMap<GenreDto, Genre>();
-            CreateMap<Reviewer, ReviewerDto>();
-            CreateMap<Country, CountryDto>();
-            CreateMap<CountryDto, Country>();
-            CreateMap<Review, ReviewDto>();
+            CreateMap<Movie, MovieDto>().ReverseMap();
+            CreateMap<Category, CategoryDto>().ReverseMap();
+            CreateMap<Genre, GenreDto>().ReverseMap();
+            CreateMap<Reviewer, ReviewerDto>().ReverseMap();
+            CreateMap<Country, CountryDto>().ReverseMap();
+            CreateMap<Review, ReviewDto>().ReverseMap();
         }
     }
 }

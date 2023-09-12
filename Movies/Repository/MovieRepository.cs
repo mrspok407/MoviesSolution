@@ -51,5 +51,39 @@ namespace Movies.Repository
         {
             return _context.Movie.OrderBy(x => x.Rating).ToList();
         }
+
+        public bool CreateMovie(int genreId, int categoryId, Movie movie)
+        {
+            var movieGenreEntity = _context.Genres.FirstOrDefault(g => g.Id == genreId);
+            var category = _context.Categories.FirstOrDefault(c => c.Id == categoryId);
+
+            var movieGenre = new MovieGenre()
+            {
+                Genre = movieGenreEntity,
+                Movie = movie,
+            };
+            _context.Add(movieGenre);
+
+            var movieCategory = new MovieCategory()
+            {
+                Category = category,
+                Movie = movie,
+            };
+            _context.Add(movieCategory);
+            _context.Add(movie);
+
+            return Save();
+        }
+
+        public bool UpdateMovie(Movie movie)
+        {
+            _context.Update(movie);
+            return Save();
+        }
+
+        public bool Save()
+        {
+            return _context.SaveChanges() > 0;
+        }
     }
 }

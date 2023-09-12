@@ -12,6 +12,7 @@ namespace Movies.Repository
         {
             _context = context;
         }
+
         public Reviewer GetReviewer(int reviewerId)
         {
             return _context.Reviewers.Include(r => r.Reviews).FirstOrDefault(r => r.Id == reviewerId);
@@ -30,6 +31,23 @@ namespace Movies.Repository
         public bool ReviewerExists(int reviewerId)
         {
             return _context.Reviewers.Any(r => r.Id == reviewerId);
+        }
+
+        public bool CreateReviewer(Reviewer reviewer)
+        {
+            _context.Add(reviewer);
+            return Save();
+        }
+
+        public bool UpdateReviewer(Reviewer reviewer)
+        {
+            _context.Update(reviewer);
+            return Save();
+        }
+
+        public bool Save()
+        {
+            return _context.SaveChanges() > 0;
         }
     }
 }

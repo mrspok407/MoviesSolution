@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Movies.Dto;
 using Movies.Interfaces;
 using Movies.Models;
+using Movies.Repository;
 using System.Net;
 
 namespace Movies.Controllers
@@ -13,10 +14,12 @@ namespace Movies.Controllers
     public class MovieController : Controller
     {
         private readonly IMovieRepository _movieRepository;
+        private readonly IGenreRepository _genreRepository;
+        private readonly IReviewRepository _reviewRepository;
         private readonly IMapper _mapper;
 
 
-        public MovieController(IMovieRepository movieRepository, IMapper mapper)
+        public MovieController(IMovieRepository movieRepository, IGenreRepository _genreRepository, IReviewRepository _reviewRepository, IMapper mapper)
         {
             _movieRepository = movieRepository;
             _mapper = mapper;
@@ -80,6 +83,67 @@ namespace Movies.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             return Ok(reviewers);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateMovie([FromQuery] int genreId, [FromQuery] int categoryId, [FromBody] MovieDto movieInput)
+        {
+            if (movieInput == null)
+                return BadRequest(ModelState);
+
+
+            var movie = _movieRepository.GetMovies()
+                .FirstOrDefault(g => g.Title.Trim().ToUpper() == movieInput.Title.Trim().ToUpper());
+
+            if (movie != null)
+            {
+                ModelState.AddModelError("", "Movie allready exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var movieMap = _mapper.Map<Movie>(movieInput);
+            
+
+            if (!_movieRepository.CreateMovie(genreId, categoryId, movieMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Successfully created");
+        }
+
+        [HttpPut("{movieId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+
+        public IActionResult UpdateMovie(int movieId, [FromBody] MovieDto updatedMovie)
+        {
+            if (updatedMovie == null)
+                return BadRequest(ModelState);
+
+            if (movieId != updatedMovie.Id)
+                return BadRequest(ModelState);
+
+            if (!_movieRepository.MovieExists(movieId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var movieMap = _mapper.Map<Movie>(updatedMovie);
+
+            if (!_movieRepository.UpdateMovie(movieMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Successfully updated");
         }
 
     }

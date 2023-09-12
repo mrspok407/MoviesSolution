@@ -4,6 +4,7 @@ using Movies.Dto;
 using Movies.Interfaces;
 using Movies.Models;
 using Movies.Repository;
+using System.Collections.Generic;
 
 namespace Movies.Controllers
 {
@@ -122,6 +123,45 @@ namespace Movies.Controllers
                 return StatusCode(500, ModelState);
             }
             return Ok("Successfully created");
+        }
+
+        [HttpPut("{genreId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+
+        public IActionResult UpdateGenre(int genreId, [FromBody] GenreDto updatedGenre)
+        {
+            if (updatedGenre == null)
+                return BadRequest(ModelState);
+
+            if (genreId != updatedGenre.Id)
+                return BadRequest(ModelState);
+
+            if (!_genreRepository.GenreExists(genreId))
+                return NotFound();
+
+            var genreWithType = _genreRepository.GetGenres()
+                .FirstOrDefault(g => g.Type.Trim().ToUpper() == updatedGenre.Type.Trim().ToUpper());
+            if (genreWithType != null)
+            {
+                ModelState.AddModelError("", "Genre with this type already exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var genreMap = _mapper.Map<Genre>(updatedGenre);
+
+            if (!_genreRepository.UpdateGenre(genreMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            var moviewWithGenre = _mapper.Map<List<MovieDto>>(_genreRepository.GetMoviesByGenreId(genreId));
+            return Ok(moviewWithGenre);
         }
     }
 

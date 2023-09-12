@@ -16,6 +16,8 @@ namespace Movies.Interfaces
 
         bool GenreExists(int id);
         bool CreateGenre(Genre genre);
+        bool UpdateGenre(Genre genre);
+
         bool Save();
     }
 }

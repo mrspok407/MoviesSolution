@@ -10,7 +10,5 @@ namespace Movies.Dto
 
         public DateTime? ReleaseDate { get; set; }
         public DateTime? CreatedDate { get; set; } = DateTime.Now;
-
-        public ICollection<ReviewDto> Reviews { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Movies.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Movies.Data;
 using Movies.Interfaces;
 using Movies.Models;
 
@@ -25,7 +26,7 @@ namespace Movies.Repository
 
         public Country GetCountry(int countryId)
         {
-            return _context.Countries.FirstOrDefault(c => c.Id == countryId);   
+            return _context.Countries.Where(c => c.Id == countryId).Include(c => c.Genres).FirstOrDefault();   
         }
 
         public Country GetCountryByGenre(int genreId)
@@ -44,10 +45,15 @@ namespace Movies.Repository
             return Save();
         }
 
+        public bool UpdateCountry(Country country)
+        {
+            _context.Update(country);
+            return Save();
+        }
+
         public bool Save()
         {
-            var saved = _context.SaveChanges();
-            return saved > 0 ? true : false; ;
+            return _context.SaveChanges() > 0;
         }
     }
 }
