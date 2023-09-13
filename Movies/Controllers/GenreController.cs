@@ -69,6 +69,11 @@ namespace Movies.Controllers
             return Ok(movies);
         }
 
+        /// <summary>
+        /// fgsdgfdgfdg
+        /// </summary>
+        /// <param name="genreId"></param>
+        /// <returns></returns>
         [HttpGet("{genreId}/country")]
         [ProducesResponseType(200, Type = typeof(Country))]
         [ProducesResponseType(400)]
@@ -162,6 +167,31 @@ namespace Movies.Controllers
 
             var moviewWithGenre = _mapper.Map<List<MovieDto>>(_genreRepository.GetMoviesByGenreId(genreId));
             return Ok(moviewWithGenre);
+        }
+
+        [HttpDelete("{genreId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+
+        public IActionResult DeleteGenre(int genreId)
+        {
+            if (!_genreRepository.GenreExists(genreId))
+            {
+                return NotFound();
+            }
+
+            var genreToDelete = _genreRepository.GetGenre(genreId);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_genreRepository.DeleteGenre(genreToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting genre");
+            }
+
+            return NoContent();
         }
     }
 

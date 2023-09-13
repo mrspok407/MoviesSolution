@@ -19,9 +19,11 @@ namespace Movies.Controllers
         private readonly IMapper _mapper;
 
 
-        public MovieController(IMovieRepository movieRepository, IGenreRepository _genreRepository, IReviewRepository _reviewRepository, IMapper mapper)
+        public MovieController(IMovieRepository movieRepository, IGenreRepository genreRepository, IReviewRepository reviewRepository, IMapper mapper)
         {
             _movieRepository = movieRepository;
+            _reviewRepository = reviewRepository;
+            _genreRepository = genreRepository;
             _mapper = mapper;
 
         }
@@ -85,6 +87,21 @@ namespace Movies.Controllers
             return Ok(reviewers);
         }
 
+        [HttpGet("{movieId}/genres")]
+        [ProducesResponseType(200, Type = typeof(ICollection<Genre>))]
+        [ProducesResponseType(400)]
+
+        public IActionResult GetGenres(int movieId)
+        {
+            if (!_movieRepository.MovieExists(movieId))
+                return NotFound();
+            var genres = _mapper.Map<List<GenreDto>>(_movieRepository.GetMovieGenres(movieId));
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            return Ok(genres);
+        }
+
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -146,5 +163,79 @@ namespace Movies.Controllers
             return Ok("Successfully updated");
         }
 
+        [HttpDelete("{movieId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+
+        public IActionResult DeleteMovie(int movieId)
+        {
+            if (!_movieRepository.MovieExists(movieId))
+            {
+                return NotFound();
+            }
+
+
+            var movieToDelete = _movieRepository.GetMovie(movieId);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_movieRepository.DeleteMovie(movieToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting movie");
+            }
+
+            return NoContent();
+        }
+
+        [HttpPost("{movieId}/add-genre/{genreId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult AddGenre(int movieId, int genreId)
+        {
+            if (!_movieRepository.MovieExists(movieId))
+                return NotFound("Movie with provided ID does not exists");
+            if (!_genreRepository.GenreExists(genreId))
+                return NotFound("Genre with provided ID does not exists");
+
+            if (_movieRepository.MovieHasGenre(movieId, genreId))
+            {
+                ModelState.AddModelError("", "Movie allready has this genre");
+                return StatusCode(422, ModelState);
+            }
+
+
+            if (!_movieRepository.AddGenreToMovie(movieId, genreId))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Successfully created");
+        }
+
+        [HttpPost("{movieId}/remove-genre/{genreId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult RemoveGenre(int movieId, int genreId)
+        {
+            if (!_movieRepository.MovieExists(movieId))
+                return NotFound("Movie with provided ID does not exists");
+            if (!_genreRepository.GenreExists(genreId))
+                return NotFound("Genre with provided ID does not exists");
+
+            if (!_movieRepository.MovieHasGenre(movieId, genreId))
+            {
+                ModelState.AddModelError("", "Movie doesn't have this genre");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!_movieRepository.RemoveGenreFromMovie(movieId, genreId))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Successfully removed");
+        }
     }
 }

@@ -2,6 +2,7 @@
 using Movies.Data;
 using Movies.Interfaces;
 using Movies.Models;
+using System.Diagnostics.Metrics;
 using System.Linq;
 
 namespace Movies.Repository
@@ -52,6 +53,39 @@ namespace Movies.Repository
             return _context.Movie.OrderBy(x => x.Rating).ToList();
         }
 
+        public ICollection<Genre> GetMovieGenres(int movieId)
+        {
+            return _context.MovieGenres.Where(mg => mg.MovieId == movieId).Select(mg => mg.Genre).ToList();
+        }
+
+        public bool MovieHasGenre(int movieId, int genreId)
+        {
+            return _context.MovieGenres.Any(mg => mg.MovieId == movieId &&  mg.GenreId == genreId);
+        }
+
+        public bool AddGenreToMovie(int movieId, int genreId)
+        {
+            var movie = GetMovie(movieId);
+            var genre = _context.Genres.FirstOrDefault(g => g.Id == genreId);
+
+            var movieGenre = new MovieGenre()
+            {
+                Genre = genre,
+                Movie = movie,
+            };
+            _context.Add(movieGenre);
+
+            return Save();
+        }
+
+        public bool RemoveGenreFromMovie(int movieId, int genreId)
+        {
+            var movieGenreEntity = _context.MovieGenres.FirstOrDefault(mg => mg.MovieId == movieId && mg.GenreId == genreId);
+            _context.Remove(movieGenreEntity);
+
+            return Save();
+        }
+
         public bool CreateMovie(int genreId, int categoryId, Movie movie)
         {
             var movieGenreEntity = _context.Genres.FirstOrDefault(g => g.Id == genreId);
@@ -79,6 +113,10 @@ namespace Movies.Repository
         {
             _context.Update(movie);
             return Save();
+        }
+        public bool DeleteMovie(Movie movie)
+        {
+            return _context.Movie.Where(p => p.Id == movie.Id).Include(r => r.Reviews).ExecuteDelete() > 0;
         }
 
         public bool Save()

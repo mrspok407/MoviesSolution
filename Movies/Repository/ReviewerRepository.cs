@@ -44,6 +44,11 @@ namespace Movies.Repository
             _context.Update(reviewer);
             return Save();
         }
+        public bool DeleteReviewer(Reviewer reviewer)
+        {
+            return _context.Reviewers.Where(r => r.Id == reviewer.Id).Include(r => r.Reviews).ExecuteDelete() > 0;
+        }
+
 
         public bool Save()
         {
